@@ -4,7 +4,7 @@
 
 git clone https://github.com/zNotChill/irc.git irc
 
-yes | apt install npm
+apt install npm -y
 npm install pm2 -g 
 
 cd irc/server
