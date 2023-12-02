@@ -4,14 +4,27 @@ const readline = require('readline').createInterface({
   output: process.stdout
 });
 
+const yargs = require('yargs');
+
 (async () => {
-  readline.question("Server address: ", (server) => {
-    readline.question("Name: ", (name) => {
-      require('./client')({
-        server,
-        name,
-        readline
+  const server = yargs.argv.server;
+  const name = yargs.argv.name;
+
+  if (server && name) {
+    require('./client')({
+      server,
+      name,
+      readline
+    });
+  } else {
+    readline.question("Server address: ", (server) => {
+      readline.question("Name: ", (name) => {
+        require('./client')({
+          server,
+          name,
+          readline
+        });
       });
     });
-  });
+  }
 })();
