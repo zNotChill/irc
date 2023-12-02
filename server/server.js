@@ -9,18 +9,19 @@ let messages = [];
 console.log(`Server has been created`);
 
 io.on('connection', (socket) => {
-  console.log('a user connected');
   
   socket.emit('message', JSON.stringify({
     action: 'userList',
     users: users,
     messages: messages,
-    timestamp: new Date(),
+    timestamp: Date.now(),
   }))
 
   socket.on('disconnect', () => {
-    console.log('user disconnected');
-    io.emit('message', JSON.stringify({ action: 'userLeft', user: socket.id, timestamp: new Date() }));
+    const user = users.find((user) => user.id === socket.id);
+
+    console.log(`${user.name} disconnected (${socket.id})`);
+    io.emit('message', JSON.stringify({ action: 'userLeft', user: socket.id, name: user.name, timestamp: Date.now() }));
 
     users = users.filter((user) => user.id !== socket.id);
   });
@@ -34,16 +35,17 @@ io.on('connection', (socket) => {
 
     switch (message.action) {
       case "newUser":
+        console.log(`${message.name} joined the chat (${socket.id})`);
         users.push({
           id: socket.id,
           name: message.name,
         });
-        io.emit('message', JSON.stringify({ action: 'newUser', user: socket.id, name: message.name, timestamp: new Date() }));
+        io.emit('message', JSON.stringify({ action: 'newUser', user: socket.id, name: message.name, timestamp: Date.now() }));
         break;
 
       case "newMessage":
         messages.push(message.message);
-        io.emit('message', JSON.stringify({ action: 'newMessage', message: message.message, user: socket.id, name: message.name, timestamp: new Date() }));
+        io.emit('message', JSON.stringify({ action: 'newMessage', message: message.message, user: socket.id, name: message.name, timestamp: Date.now() }));
         break;
     }
   });
