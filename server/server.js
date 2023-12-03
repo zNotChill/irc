@@ -21,9 +21,9 @@ io.on('connection', (socket) => {
     const user = users.find((user) => user.id === socket.id);
 
     console.log(`${user.name} disconnected (${socket.id})`);
-    io.emit('message', JSON.stringify({ action: 'userLeft', user: socket.id, name: user.name, timestamp: Date.now() }));
-
     users = users.filter((user) => user.id !== socket.id);
+    io.emit('message', JSON.stringify({ action: 'userLeft', user: socket.id, name: user.name, timestamp: Date.now() }));
+    io.emit('message', JSON.stringify({ action: 'userList', users: users, messages: messages, timestamp: Date.now() }));
   });
 
   socket.on('message', (msg) => {
@@ -40,7 +40,9 @@ io.on('connection', (socket) => {
           id: socket.id,
           name: message.name,
         });
+
         io.emit('message', JSON.stringify({ action: 'newUser', user: socket.id, name: message.name, timestamp: Date.now() }));
+        io.emit('message', JSON.stringify({ action: 'userList', users: users, messages: messages, timestamp: Date.now() }));
         break;
 
       case "newMessage":

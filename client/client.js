@@ -7,7 +7,12 @@ async function runClient(options) {
 
   const io = socket(server);
 
+  let users = [];
+  let messages = [];
+
   readline.on('line', (input) => {
+    if(input.startsWith('/')) return commandParser(input);
+
     io.emit('message', {
       action: "newMessage",
       name: name,
@@ -49,17 +54,25 @@ async function runClient(options) {
 
       switch (message.action) {
         case "userList":
-          console.log(`Session Start: ${time.getDate()}/${time.getMonth()}/${time.getFullYear()} ${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}`);
-          console.log(`*** INFO: Connected to ${server} *** ${message.users.length} connected users ***`);
+          if(users.length === 0) {
+            console.log(`Session Start: ${time.getDate()}/${time.getMonth()}/${time.getFullYear()} ${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}`);
+            console.log(`*** INFO: Connected to ${server} *** ${message.users.length} connected users ***`);
+          }
+
+          users = message.users;
           break;
         case "newUser":
           console.log(`${message.name} joined the chat`);
+
+          users.push({
+            id: message.user,
+            name: message.name,
+          });
           break;
         case "newMessage":
           writeMessage(message.timestamp, message.name, message.message);
           break;
         case "userLeft":
-          console.log(message);
           console.log(`${message.name} left the chat`);
           break;
         default:
@@ -68,6 +81,31 @@ async function runClient(options) {
       }
     });
   });
+
+  function sysLog(message) {
+    console.log(`*** ${message} ***`);
+  }
+
+  function commandParser(input) {
+    const args = input.split(' ');
+    const command = args[0].substr(1);
+    args.shift();
+
+    switch (command) {
+      case "exit":
+        sysLog("Exiting");
+        process.exit(0);
+        break;
+
+      case "users":
+        sysLog(`> ${users.length} connected users`);
+        break;
+
+      default:
+        sysLog(`Unknown command: ${command}`);
+        break;
+    }
+  }
 }
 
 module.exports = runClient;
